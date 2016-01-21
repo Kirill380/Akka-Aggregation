@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 public class EndProcess extends UntypedActor {
 
     private static Logger log = Logger.getLogger(EndProcess.class.getName());
+    private final String OUTPUT_FILE = "aggregation.txt";
 
     @Override
     public void onReceive(Object message) throws Exception {
@@ -23,11 +24,12 @@ public class EndProcess extends UntypedActor {
             final AggregationResult result = (AggregationResult) message;
             log.info("Aggregation took " + result.getDuration());
 
+            // make non-blocking writing
             Future<String> f = Futures.future(new Callable<String>() {
                 @Override
                 public String call() throws Exception {
                     String res;
-                    try (BufferedWriter write = new BufferedWriter(new FileWriter("aggregation.txt"))) {
+                    try (BufferedWriter write = new BufferedWriter(new FileWriter(OUTPUT_FILE))) {
                         for (Integer id : result.getFinalResult().keySet()) {
                             write.write(id + " : " + result.getFinalResult().get(id) + "\n");
                         }

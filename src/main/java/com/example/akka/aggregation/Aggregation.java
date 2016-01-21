@@ -15,13 +15,18 @@ import java.util.logging.Logger;
 
 public class Aggregation {
     private static Logger log = Logger.getLogger(Aggregation.class.getName());
+    private int numOfWorkers = 4;
+    private int numOfMessages = 1000;
+    private String filePath = Constants.FILE_PATH;
+
 
     public static void main(String[] args) {
         Aggregation agg = new Aggregation();
-        agg.aggregate(4, 1000);
+        agg.parseInput(args);
+        agg.aggregate();
     }
 
-    private void aggregate(final int numOfWorkers, final int numOfMessages) {
+    private void aggregate() {
         ActorSystem system = ActorSystem.create("aggregation");
 
         // create the end process actor, which will save the result to file and shutdown the system
@@ -35,19 +40,20 @@ public class Aggregation {
         }), "master");
 
 
-        try(BufferedReader reader = new BufferedReader(new FileReader(Constants.FILE_PATH))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             List<String> piece = new ArrayList<>();
             int sizeOfMessage = Constants.NUMBER_OF_RECORDS / numOfMessages;
+
             while ((line = reader.readLine()) != null) {
                 piece.add(line);
-                if(piece.size() == sizeOfMessage) {
+                if (piece.size() == sizeOfMessage) {
                     master.tell(new FilePiece(piece));
                     piece = new ArrayList<>();
                 }
             }
 
-            if(!piece.isEmpty()) {
+            if (!piece.isEmpty()) {
                 master.tell(new FilePiece(piece));
             }
 
@@ -55,4 +61,39 @@ public class Aggregation {
             log.log(Level.SEVERE, "I/O Exception: ", e);
         }
     }
+
+
+    private void parseInput(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            // detect option if no options were detected then ignore program arguments
+            if (args[i].contains("-")) {
+                if (args.length <= i + 1)
+                    throw new IllegalArgumentException("Option may not be without value");
+
+                switch (args[i]) {
+                    case "-w":
+                        numOfWorkers = parseIntValue(args[i + 1]);
+                        break;
+                    case "-m":
+                        numOfMessages = parseIntValue(args[i + 1]);
+                        break;
+                    case "-f":
+                        filePath = args[i + 1];
+                        break;
+                    default:
+                        throw new IllegalArgumentException("No such option");
+                }
+            }
+        }
+
+    }
+
+
+    private int parseIntValue(String value) {
+        int num = Integer.parseInt(value);
+        if (num <= 0)
+            throw new IllegalArgumentException("Value may not be less or equal zero");
+        return num;
+    }
+
 }
