@@ -1,3 +1,4 @@
+# File Aggregation
 
 ```
 java -jar aggregation-1.0-SNAPSHOT.jar [-f <file_path> -w <num> -m <num>]
