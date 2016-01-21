@@ -1,5 +1,12 @@
 # File Aggregation
 
+Run in project folder
+
+```
+mvn clean install 
+```
+
+Then execute  jar
 ```
 java -jar aggregation-1.0-SNAPSHOT.jar [-f <file_path> -w <num> -m <num>]
 ```
