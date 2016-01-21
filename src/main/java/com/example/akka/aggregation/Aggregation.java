@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+/*
+* Time of aggregation depend on number of workers and size of messages that
+* calculated using numOfMessages.
+* */
 public class Aggregation {
     private static Logger log = Logger.getLogger(Aggregation.class.getName());
     private int numOfWorkers = 4;
